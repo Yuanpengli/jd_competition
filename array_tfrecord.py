@@ -176,11 +176,11 @@ class ArrayTFRecord(BaseArrayTFRecord):
         features = tf.parse_single_example(
                 serialized_example,
                 features={
-                    'x': tf.FixedLenFeature([], tf.string), 
-                    'y': tf.FixedLenFeature([], tf.string)})
+                    'img_raw': tf.FixedLenFeature([], tf.string), 
+                    'img_label': tf.FixedLenFeature([], tf.string)})
 
-        x = tf.decode_raw(features['x'], convert_string_to_dtype_tf(self.image_dtype))
-        y = tf.decode_raw(features['y'], convert_string_to_dtype_tf(self.labels_dtype))
+        x = tf.decode_raw(features['img_raw'], convert_string_to_dtype_tf(self.image_dtype))
+        y = tf.decode_raw(features['img_label'], convert_string_to_dtype_tf(self.labels_dtype))
 
         x = tf.reshape(x, self.image_shape, name='image')
         y = tf.reshape(y, self.labels_shape, name='label')
@@ -204,11 +204,12 @@ class ArrayTFRecord(BaseArrayTFRecord):
 def preprocess_example(single_example):
     single_example = list(single_example)
     # print single_example
-    single_example[0] = tf.div(tf.clip_by_value(tf.add(single_example[0], 160), 1., 400.), 401.)
-    # single_example[1] = tf.to_int32(single_example[1])
-    single_example[1] = tf.one_hot(single_example[1], depth=3, on_value=1.0, off_value=0.0)
-    single_example[1] = tf.squeeze(single_example[1])
+    single_example[0] = tf.cast(single_example[0], tf.float32)
 
+    single_example[1] = tf.reshape(tf.squeeze(single_example[1]), [-1, 30])
+    # single_example[1] = tf.to_int32(single_example[1])
+    #single_example[1] = tf.one_hot(single_example[1], depth=3, on_value=1.0, off_value=0.0)
+    #single_example[1] = tf.squeeze(single_example[1])
     return single_example
 
 
@@ -234,11 +235,11 @@ def prepare_batch_data(train_tfrecord_file, valid_tfrecord_file, batch_size, num
         array_tfrecord = ArrayTFRecord(image_shape, labels_shape, image_dtype, labels_dtype)
 
         train_single_example = array_tfrecord.read_tfrecord(train_tfrecord_file, num_epochs=num_epochs)
+        train_single_example = preprocess_example(train_single_example)
         train_batch_example = shuffle_batch_example(train_single_example, batch_size)
-
         valid_single_example = array_tfrecord.read_tfrecord(valid_tfrecord_file, num_epochs=num_epochs)
+        valid_single_example = preprocess_example(valid_single_example)
         valid_batch_example = shuffle_batch_example(valid_single_example, batch_size)
-
         return train_batch_example, valid_batch_example
 
 
@@ -248,7 +249,7 @@ image_dtype = 'uint8'
 labels_dtype = 'float64'
 
 
-batch_size = 5
+batch_size = 3
 num_epochs = 10
 '''
 valid_list = [9 * i for i in range(31)]
