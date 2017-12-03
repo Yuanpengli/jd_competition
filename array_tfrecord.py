@@ -258,3 +258,7 @@ valid_tfrecord_file = ['/home/yunzhou/fromFiles/datasets/jd_data/temp/jd_img_' +
 train_batch_example, valid_batch_example = prepare_batch_data(train_tfrecord_file, valid_tfrecord_file, batch_size, num_epochs)
 train_batch_images, train_batch_labels = train_batch_example
 valid_batch_images, valid_batch_labels = valid_batch_example
+
+
+
+
