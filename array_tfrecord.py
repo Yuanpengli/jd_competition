@@ -234,30 +234,42 @@ def prepare_batch_data(train_tfrecord_file, valid_tfrecord_file, batch_size, num
         array_tfrecord = ArrayTFRecord(image_shape, labels_shape, image_dtype, labels_dtype)
 
         train_single_example = array_tfrecord.read_tfrecord(train_tfrecord_file, num_epochs=num_epochs)
-        single_example_preprocessed = preprocess_example(train_single_example)
-        train_batch_example = shuffle_batch_example(single_example_preprocessed, batch_size)
+        train_batch_example = shuffle_batch_example(train_single_example, batch_size)
 
         valid_single_example = array_tfrecord.read_tfrecord(valid_tfrecord_file, num_epochs=num_epochs)
-        single_example_preprocessed = preprocess_example(valid_single_example)
-        valid_batch_example = shuffle_batch_example(single_example_preprocessed, batch_size)
+        valid_batch_example = shuffle_batch_example(valid_single_example, batch_size)
 
         return train_batch_example, valid_batch_example
 
 
 image_shape = (1280, 720, 3)
-labels_shape = (30)
+labels_shape = (30, 1)
 image_dtype = 'uint8'
 labels_dtype = 'float64'
+
+
 batch_size = 5
 num_epochs = 10
-valid_list = [9 * i for i in xrange(31)]
-train_list = [i for i in xrange(296) if i not in valid_list]
+'''
+valid_list = [9 * i for i in range(31)]
+train_list = [i for i in range(296) if i not in valid_list]
 train_tfrecord_file = ['/home/yunzhou/fromFiles/datasets/jd_data/temp/jd_img_' + str(num) + '.tfrecord' for num in train_list]
 valid_tfrecord_file = ['/home/yunzhou/fromFiles/datasets/jd_data/temp/jd_img_' + str(num) + '.tfrecord' for num in valid_list]
+'''
+
+import os
+dataset_dir = '/home/yunzhou/fromFiles/datasets/jd_data/temp/'
+name_list = os.listdir(dataset_dir)
+tfrecord_file = [os.path.join(dataset_dir, name) for name in name_list]
+train_tfrecord_file = tfrecord_file[:270]
+valid_tfrecord_file = tfrecord_file[270:]
 
 train_batch_example, valid_batch_example = prepare_batch_data(train_tfrecord_file, valid_tfrecord_file, batch_size, num_epochs)
 train_batch_images, train_batch_labels = train_batch_example
 valid_batch_images, valid_batch_labels = valid_batch_example
+
+print (train_batch_images)
+print (train_batch_labels)
 
 
 
