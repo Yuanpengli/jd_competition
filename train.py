@@ -1,6 +1,8 @@
 import numpy as np
 import tensorflow as tf
+from keras.layers import Flatten, Dense
 from jd_competition.array_tfrecord import prepare_batch_data
+from jd_competition.vgg16 import vgg16
 
 def run_eval(sess, eval_ops, num_batches_per_epoch):
    eval_metrics_tmp = []
@@ -29,3 +31,60 @@ def run_eval(sess, eval_ops, num_batches_per_epoch):
 
    # print('num_batches_eval: {0}'.format(count))
    return eval_metrics
+
+def evaluate(logits, label_tensor):
+    # print logits
+    # print label_tensor
+    loss = tf.reduce_mean((tf.nn.softmax_cross_entropy_with_logits(logits=logits,
+                                                                          labels=label_tensor,
+                                                                          name="entropy")))
+    return loss
+
+
+
+def inference(image):
+    vgg_output = vgg16(image)
+    vgg_flatten = Flatten(name='flatten')(vgg_output)
+    h = Dense(100, activation='relu')(vgg_flatten)
+    predict = Dense(10, activation='lrelu')(h)
+    return predict
+
+def train(train_dataset_path, valid_dataset_path, batch_size, num_epochs):
+    with tf.Graph().as_default() as graph:
+        train_batch_example, valid_batch_example = prepare_batch_data(train_dataset_path, valid_dataset_path,
+                                                                      batch_size, num_epochs, graph)
+        train_batch_images, train_batch_labels = train_batch_example
+        valid_batch_images, valid_batch_labels = valid_batch_example
+        with tf.variable_scope('vgg16') as scope:
+            train_logits = inference(train_batch_images)
+            scope.reuse_variables()
+            valid_logits = inference()
+        valid_loss = evaluate(valid_logits, valid_batch_labels)
+        train_loss = evaluate(train_logits, train_batch_labels)
+        train_op = tf.train.AdamOptimizer(0.0001).minimize(train_loss)
+
+
+
+    with tf.Session() as sess:
+        init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+        sess.run(init_op)
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
+        # train_metrics = run_eval(sess, {'train_op': train_op, 'loss': total_loss}, 2)
+        # eval_metrics = run_eval(sess, {'eval_op': eval_ops}, 1)
+        metrics_1 = run_eval(sess, {'train_op': train_op, 'train_loss': train_loss}, 2000)
+        print(metrics_1)
+        metrics_2 = run_eval(sess, {'valid_loss': valid_loss}, 100)
+        print(metrics_2)
+        # print('---' * 10 + str(ii) + '---' * 10)
+        # saver.save(sess, "/Users/wangxiaodong/LITS_FCN/model.ckpt", ii)
+        coord.request_stop()
+        coord.join(threads)
+        sess.close()
+
+
+
+
+
+
