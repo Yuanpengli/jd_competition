@@ -10,7 +10,7 @@ from jd_competition.new_vgg16_model import Model
 if __name__=="__main__":
     dataset_dir = '/home/liyuanpeng/Desktop/jingdong_competition/train_imgs/1'
     name_list = os.listdir(dataset_dir)
-    target_size, num_class, batch_size = (1280, 720), 30, 128
+    target_size, num_class, batch_size = (1280, 720), 30, 8
     image_files = [os.path.join(dataset_dir, name) for name in name_list]
     image_labels = [0]*2950
     dataset_img = ImageFilesDataset(target_size, batch_size=batch_size)
@@ -18,7 +18,7 @@ if __name__=="__main__":
     #                             one_hot=True, num_class=num_class)
     train_ops = dataset_img.compile(decoding=True, grayscale=False,
                                     one_hot=True, num_class=num_class,
-                                    distortion=True, shuffle=True, buffer_size=1000,
+                                    distortion=True, shuffle=True, buffer_size=300,
                                     epochs=10)
     ops = train_ops
 
