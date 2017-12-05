@@ -32,14 +32,14 @@ if __name__=="__main__":
 
     next_element = ops['next_element']
     image, label = next_element
-    print image
-    print label
 
     model = Model(checkpoint_dir=checkpoint_dir)
     logits = model.inference(image)
     loss = model.loss_func(logits, label)
     train_op = model.minimize(loss)
 
-    for ii in range(100):
-        sess.run(train_op)
-
+    for ii in range(10000):
+        _, loss_value = sess.run(train_op, loss)
+        print (ii, loss_value)
+        if ii % 100 == 0:
+            model.save(sess, global_step=ii)
