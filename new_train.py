@@ -9,6 +9,8 @@ from jd_competition.new_vgg16_model import Model
 
 if __name__=="__main__":
     dataset_dir = '/home/liyuanpeng/Desktop/jingdong_competition/train_imgs/1'
+    checkpoint_dir = ''
+
     name_list = os.listdir(dataset_dir)
     target_size, num_class, batch_size = (1280, 720), 30, 8
     image_files = [os.path.join(dataset_dir, name) for name in name_list]
@@ -33,7 +35,7 @@ if __name__=="__main__":
     print image
     print label
 
-    model = Model()
+    model = Model(checkpoint_dir=checkpoint_dir)
     logits = model.inference(image)
     loss = model.loss_func(logits, label)
     train_op = model.minimize(loss)

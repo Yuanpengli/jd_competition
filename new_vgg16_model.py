@@ -5,8 +5,9 @@ from keras.layers.normalization import BatchNormalization as BNOR
 from keras.regularizers import l2
 
 class Model(object):
-    def __init__(self, num_class=30):
+    def __init__(self, num_class=30, checkpoint_dir=None):
         self.num_class = num_class
+        self.checkpoint_dir = checkpoint_dir
 
     def _vgg16(self, input_tensor):
         h = Conv2D(64, (3, 3), activation='relu', strides=1, padding='same', name='block1_conv1')(input_tensor)
@@ -37,6 +38,7 @@ class Model(object):
         h = MaxPooling2D(pool_size=(2, 2), strides=(2, 2), name='block5_pool')(h)
         print ('block 5')
         print ('h', h)
+        self.saver = tf.train.Saver()
         # model.load_weights('~/.keras/models/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5')
         return h
 
@@ -57,6 +59,16 @@ class Model(object):
     def minimize(self, loss):
         train_op = tf.train.AdamOptimizer(0.0001).minimize(loss)
         return train_op
+
+    def reload(self, sess):
+        ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
+        self.saver.restore(sess, ckpt.model_checkpoint_path)
+
+    def save(self, sess, global_step):
+        self.saver.save(sess, self.checkpoint_dir + 'model.ckpt', global_step=global_step)
+
+
+
 
 
 
