@@ -72,6 +72,7 @@ def train(train_dataset_path, valid_dataset_path, batch_size, num_epochs):
         print ('*'*100)
         print ('train_loss', train_loss)
         train_op = tf.train.AdamOptimizer(0.0001).minimize(train_loss)
+        saver = tf.train.Saver()
 
 
 
@@ -79,6 +80,7 @@ def train(train_dataset_path, valid_dataset_path, batch_size, num_epochs):
         init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
         sess.run(init_op)
         coord = tf.train.Coordinator()
+
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
         # train_metrics = run_eval(sess, {'train_op': train_op, 'loss': total_loss}, 2)
@@ -88,8 +90,8 @@ def train(train_dataset_path, valid_dataset_path, batch_size, num_epochs):
         print(metrics_1)
         metrics_2 = run_eval(sess, {'valid_loss': valid_loss}, 100)
         print(metrics_2)
-        # print('---' * 10 + str(ii) + '---' * 10)
-        # saver.save(sess, "/Users/wangxiaodong/LITS_FCN/model.ckpt", ii)
+        print('---' * 10 + str(ii) + '---' * 10)
+        saver.save(sess, "/Users/wangxiaodong/LITS_FCN/model.ckpt", ii)
         coord.request_stop()
         coord.join(threads)
         sess.close()
