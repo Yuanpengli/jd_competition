@@ -45,7 +45,7 @@ class Model(object):
     def inference(self, input_tensor):
         vgg_output = self._vgg16(input_tensor)
         output = Flatten(name='flatten_1')(vgg_output)
-        h = Dense(200, activation='relu')(output)
+        h = Dense(200, activation='sigmoid')(output)
         predict = Dense(self.num_class, activation='relu')(h)
         return predict
 
