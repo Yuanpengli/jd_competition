@@ -3,7 +3,6 @@ import tensorflow as tf
 from keras.layers import Flatten, Dense
 from jd_competition.array_tfrecord import prepare_batch_data
 from jd_competition.vgg16 import vgg16
-
 def run_eval(sess, eval_ops, num_batches_per_epoch):
    eval_metrics_tmp = []
    eval_metrics = {}
